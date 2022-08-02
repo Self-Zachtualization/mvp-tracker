@@ -7,17 +7,57 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const sql = postgres({
-  connectionString: process.env.DATABASE_URL,
-  ...(process.env.NODE_ENV === "production" ? { ssl: { rejectUnauthorized: false } } : {}),
-});
+const sql = postgres(`postgres://localhost:5432/tracker`);
+
+//   connectionString: process.env.DATABASE_URL,
+//   ...(process.env.NODE_ENV === "production" ? { ssl: { rejectUnauthorized: false } } : {}),
+// });
 
 app.use(express.static("static"));
 app.use(express.json());
 
+// User sign-up
+app.post("/tracker/users", async (req, res) => {
+  const { username, password } = req.body;
+  console.log(username, password);
+  const newUser = await sql`
+  INSERT INTO users (username, password)
+  VALUES (${username}, ${password}) RETURNING *`;
+  res.send(newUser[0]);
+});
+
+// User sign-on
+app.get("/tracker/users/:username", async (req, res) => {
+  const { username } = req.params;
+  console.log(username);
+  const checkedName = await sql`
+  SELECT * FROM users WHERE username = ${username}`;
+  console.log(checkedName);
+  res.send(checkedName[0]);
+});
+
 // Create new goals
+app.post("/tracker/goals", async (req, res) => {
+  const { title, description, deadline, completed, user_id } = req.body;
+  console.log(title, description, deadline, completed, user_id);
+  const goal = await sql`
+  INSERT INTO goals
+    (title, description, deadline, completed, user_id)
+  VALUES
+    (${title}, ${description}, ${deadline}, ${completed}, ${user_id}) RETURNING *`;
+  res.send(goal);
+});
 
 // See all active goals
+app.get("/tracker/goals", async (req, res) => {
+  const goals = await sql`
+  SELECT title, description, deadline, completed FROM goals`;
+  goals.forEach((item, index, arr) => {
+    const d = new Date();
+    item.deadline = item.deadline.toLocaleDateString();
+  });
+  res.send(goals);
+});
 
 // See selected goal by day
 

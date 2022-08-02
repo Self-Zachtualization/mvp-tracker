@@ -2,7 +2,8 @@ DROP TABLE IF EXISTS users, goals CASCADE;
 
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  name TEXT
+  username TEXT UNIQUE,
+  password TEXT
 );
 
 CREATE TABLE goals (
@@ -15,8 +16,7 @@ CREATE TABLE goals (
    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-INSERT INTO users (name) VALUES ('Zach');
-
+INSERT INTO users (username, password) VALUES ('Zach', 'fff');
 
 INSERT INTO goals (title, description, deadline, completed, user_id) VALUES ('Homework', 'Read ch 5','2022-08-01'  ,true, 1);
 INSERT INTO goals (title, description, deadline, completed, user_id) VALUES ('Homework', 'Read ch 10','2022-08-10' ,false, 1);
