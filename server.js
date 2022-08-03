@@ -51,11 +51,11 @@ app.post("/tracker/goals", async (req, res) => {
 // See all active goals
 app.get("/tracker/goals", async (req, res) => {
   const goals = await sql`
-  SELECT title, description, deadline, completed FROM goals`;
-  goals.forEach((item, index, arr) => {
-    const d = new Date();
-    item.deadline = item.deadline.toLocaleDateString();
-  });
+  SELECT username, title, description, deadline, completed FROM users u INNER JOIN goals g ON u.id = g.user_id`;
+  // goals.forEach((item, index, arr) => {
+  //   const d = new Date();
+  //   item.deadline = item.deadline.toLocaleDateString();
+  // });
   res.send(goals);
 });
 

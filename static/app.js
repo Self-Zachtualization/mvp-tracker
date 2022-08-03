@@ -32,8 +32,11 @@ $("#login-form").submit((event) => {
     if (password === result.password) {
       $(`#user-check`).hide();
       $.get(`/tracker/goals`, (result) => {
+        // let { username } = result;
         for (i = 0; i < result.length; i++) {
           let { title, description, deadline, completed } = result[i];
+          deadline = `${deadline.getDay()}, ${deadline.getMonth()}, ${deadline.getFullYear()}`;
+          console.log(deadline);
           const $list = $(`#goals-list`);
           const $item = $(`<li id='item ${i}'> ${title}: ${description}, due on ${deadline} </li>`);
           if (completed === true) {
@@ -42,15 +45,257 @@ $("#login-form").submit((event) => {
             $item.addClass("in-progress");
           }
           $list.append($item);
+          //   cal.data[username].i = {
+          //     title: title,
+          //     description: description,
+          //     deadline: deadline,
+          //     completed: completed,
+          //   };
+          //   console.log(cal.data);
         }
+        // cal.data.username.deadline = { year: d.getFullYear(), month: d.getMonth(), day: d.getDay() };
+        // console.log(
+        //   `cal.data: ${cal.data}, cal.data.username: ${cal.data.username}, cal.data.username.deadline: ${cal.data.username.deadline}`
+        // );
       });
+      cal.init();
       $(`#tracker-body`).show();
     }
   });
 });
 
-$("#geddit").click(() => {
-  $.get("/tracker/goals", (result) => {
-    alert("you did it mate: ", result);
-  });
-});
+// Calendar
+const cal = {
+  mName: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+
+  // Calendar Data
+  data: null,
+  sDay: 0,
+  sMth: 0,
+  sYear: 0,
+
+  // HTML elements
+  hMth: null,
+  hYear: null,
+  hForm: null,
+  hfHead: null,
+  hfDate: null,
+  hfTxt: null,
+  hfDel: null,
+
+  // Initialize Calendar
+  init: () => {
+    console.log("cal.init called successfully");
+    cal.hMth = $("#cal-mth");
+    cal.hYear = $(`#cal-yr`);
+    cal.hForm = $(`#cal-event`);
+    cal.hfHead = $(`#evt-head`);
+    cal.hfDate = $(`#evt-date`);
+    cal.hfTxt = $(`#evt-details`);
+    cal.hfDel = $(`#evt-del`);
+    $("#evt-close").click(cal.close);
+    $("#evt-del").click(cal.del);
+    $("#cal-event").submit(cal.save);
+
+    // Get Date
+    let now = new Date(),
+      nowMth = now.getMonth(),
+      nowYear = parseInt(now.getFullYear());
+
+    // Append Month Selectors
+    for (let i = 0; i < 12; i++) {
+      let $opt = $(`<option value='${i}'>${cal.mName[i]}</option>`);
+      if (nowMth === i) $opt.selected = true;
+      cal.hMth.append($opt);
+    }
+    cal.hMth.change(cal.list);
+
+    // Append Year Selectors
+    for (let i = nowYear; i <= nowYear + 4; i++) {
+      let $opt = $(`<option value='${i}'>${i}</option>`);
+      if (i === nowYear) $opt.selected = true;
+      cal.hYear.append($opt);
+    }
+    cal.hYear.change(cal.list);
+
+    // Draw Calendar
+    cal.list();
+  },
+
+  // Draw Calendar for Selected Month
+  list: () => {
+    console.log("cal.list called successfully");
+    // Get days in month, start and end days
+    cal.sMth = parseInt(cal.hMth.val());
+    cal.sYear = parseInt(cal.hYear.val());
+    let daysInMth = new Date(cal.sYear, cal.sMth + 1, 0).getDate(),
+      startDay = new Date(cal.sYear, cal.sMth, 1).getDay(),
+      endDay = new Date(cal.sYear, cal.sMth, daysInMth).getDay(),
+      now = new Date(),
+      nowMth = now.getMonth(),
+      nowYear = parseInt(now.getFullYear()),
+      nowDay = cal.sMth === nowMth && cal.sYear === nowYear ? now.getDate() : null;
+
+    // Load Data from LocalStorage (Do I want this??!?)
+    // cal.data = localStorage.getItem("cal-" + cal.sMth + "-" + cal.sYear);
+    // console.log('Before checking value of cal.data, it is this: ', cal.data);
+    // if (cal.data==null) {
+    //   localStorage.setItem("cal-" + cal.sMth + "-" + cal.sYear, "{}");
+    //   cal.data = {};
+    // } else {
+    //    cal.data = JSON.parse(JSON.stringify(cal.data));
+    //    console.log("after some stupid nonsense cal.data is this: ", cal.data)
+    //   }
+
+    // I don't think so. I want my goals data stored in the tracker DB
+    $.get(`/tracker/goals`, (result) => {
+      let { username } = result;
+      for (i = 0; i < result.length; i++) {
+        let { title, description, deadline, completed } = result[i];
+        cal.data[username][title] = {
+          description: description,
+          deadline: deadline,
+          completed: completed,
+        };
+        console.log(cal.data);
+      }
+      cal.data.username.deadline = { year: d.getFullYear(), month: d.getMonth(), day: d.getDay() };
+      console.log(
+        `cal.data: ${cal.data}, cal.data.username: ${cal.data.username}, cal.data.username.deadline: ${cal.data.username.deadline}`
+      );
+    });
+    // Drawing Calculations
+    let squares = [];
+    if (startDay !== 1) {
+      let blanks = startDay === 0 ? 7 : startDay;
+      for (let i = 0; i < blanks; i++) {
+        squares.push("b");
+      }
+    }
+    if (startDay !== 0) {
+      for (let i = 0; i < startDay; i++) {
+        squares.push("b");
+      }
+    }
+
+    // Days of the month
+    for (let i = 1; i < daysInMth; i++) {
+      squares.push(i);
+    }
+
+    // Blank Squares after end of month
+    if (endDay !== 0) {
+      let blanks = endDay === 6 ? 1 : 7 - endDay;
+      for (let i = 0; i < blanks; i++) {
+        squares.push("b");
+      }
+    }
+    if (endDay !== 6) {
+      let blanks = endDay === 0 ? 6 : 6 - endDay;
+      for (let i = 0; i < blanks; i++) {
+        squares.push("b");
+      }
+    }
+
+    // Draw HTML Calendar
+    let $container = $(".cal-container"),
+      $cTable = $(`<table id='calendar'></table>`);
+    $container.html("");
+    $container.append($cTable);
+
+    // First Row for Day Names
+    let $cRow = $(`<tr class='head'></tr>`),
+      days = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
+    for (let d of days) {
+      let $cCell = $(`<td>${d}</td>`);
+      $cRow.append($cCell);
+    }
+    $cTable.append($cRow);
+
+    // Following Rows for Weeks
+    let total = squares.length;
+    let $dRow = $(`<tr class='day'></tr>`);
+    for (let i = 0; i < total; i++) {
+      let $dCell = $(`<td></td>`);
+      if (squares[i] === "b") {
+        $dCell.addClass("blank");
+      } else {
+        if (nowDay === squares[i]) {
+          $dCell.addClass("today");
+        }
+        $dCell.append(`<div class="dd">${squares[i]}</div>`);
+        // if (cal.data.username.deadline[squares[i]]) {
+        //   $dCell.append(`<div class='evt'>${cal.data[squares[i]]}</div>`);
+        // }
+        $dCell.click = () => {
+          cal.show($dCell);
+        };
+      }
+      $dRow.append($dCell);
+      if (i !== 0 && (i + 1) % 7 === 0) {
+        $cTable.append($dRow);
+        $dRow = $(`<tr class='day'></tr>`);
+      }
+    }
+
+    // Remove any Previous Add/Edit Events
+    cal.close();
+  },
+
+  show: (el) => {
+    console.log("cal.show called successfully");
+    // "Fetch" existing data
+    cal.sDay = el.$(`.dd`)[0].html();
+    let isEdit = cal.data[cal.sDay] !== undefined;
+
+    // "Update" Event Form
+    if (isEdit) {
+      cal.hfTxt.val(cal.data[cal.sDay]);
+      cal.hfHead.text("EDIT EVENT");
+    } else {
+      cal.hfTxt.val("");
+      cal.hfHead.text("ADD EVENT");
+    }
+    cal.hfDate.text(`${cal.sDay} ${cal.mName[cal.sMth]} ${cal.sYear}`);
+    if (isEdit) {
+      cal.hfDel.removeClass("ninja");
+    } else {
+      cal.hfDel.addClass("ninja");
+    }
+    cal.hForm.removeClass("ninja");
+  },
+
+  close: () => {
+    // Close Events
+    console.log("cal.close called successfully");
+    cal.hForm.addClass("ninja");
+  },
+
+  save: () => {
+    console.log("cal.save called successfully");
+    cal.data[cal.sDay] = cal.hfTxt.val();
+    $.ajax({
+      url: "/tracker/goals",
+      type: "POST",
+      data: JSON.stringify(cal.data[cal.sDay]),
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      success: (result) => {
+        const { username } = result;
+        console.log("username ", username, " result ", result);
+        alert(`Welcome to Tracker, ${username}`);
+      },
+    });
+    cal.list();
+    return false;
+  },
+
+  del: () => {
+    console.log("cal.del called successfully");
+    if (confirm("Delete event?")) {
+      delete cal.data[cal.sDay];
+
+      cal.list();
+    }
+  },
+};

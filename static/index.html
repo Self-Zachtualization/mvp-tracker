@@ -40,14 +40,25 @@
       </div>
     </div>
     <div id="tracker-body" class="container" style="display: none">
-      <!-- <button id="geddit" class="btn">Geddit</button> -->
       <div id="goals-hold" class="container">
         <h2 id="goals-title" class="sec-title">Goals</h2>
         <ul id="goals-list"></ul>
       </div>
-      <div id="calendar" class="container">
+      <div id="cal-overhead" class="cal-overhead wrapper">
         <h2 id="calendar-title" class="sec-title">Calendar</h2>
-        <div id="cal-box"></div>
+        <div id="cal-date">
+          <select id="cal-mth"></select>
+          <select id="cal-yr"></select>
+        </div>
+        <div id="cal-container" class="cal-container container"></div>
+        <form id="cal-event">
+          <h1 id="evt-head"></h1>
+          <div id="evt-date"></div>
+          <textarea id="evt-details" required></textarea>
+          <input id="evt-close" type="button" value="Close" />
+          <input id="evt-del" type="button" value="Delete" />
+          <input id="evt-save" type="submit" value="Save" />
+        </form>
       </div>
     </div>
     <div class="footer"></div>

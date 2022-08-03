@@ -38,7 +38,7 @@ body {
 #goals-hold {
   display: flex;
   flex-direction: column;
-  flex: 30%;
+  flex: 20%;
   padding-left: 10px;
   margin-top: 5px;
   background: #7a8a918b;
@@ -47,14 +47,14 @@ body {
   border-right: 1px solid black;
 }
 
-#calendar {
+.wrapper {
   display: flex;
-  flex: 70%;
+  flex: 80%;
+  padding-left: 10px;
+  margin-top: 5px;
   border-top: 2px solid black;
   border-bottom: 2px solid black;
   border-left: 1px solid black;
-  padding-left: 10px;
-  margin-top: 5px;
 }
 
 .footer {
