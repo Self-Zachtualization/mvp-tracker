@@ -119,7 +119,6 @@ const cal = {
     for (let i = 0; i < 12; i++) {
       let $opt = $(`<option value='${i}'>${cal.mName[i]}</option>`);
       if (nowMth === i) {
-        console.log("we know what month it is");
         $opt.attr("selected", "selected");
       }
       cal.hMth.append($opt);
@@ -139,7 +138,6 @@ const cal = {
     // Fill cal.data
     $.get(`/tracker/goals`, (result) => {
       const d = new Date();
-      console.log("cal.data before population: ", cal.data);
       for (i = 0; i < result.length; i++) {
         let { title, description, deadline, completed } = result[i];
         let diff = d.getTimezoneOffset() / 60;
@@ -149,7 +147,13 @@ const cal = {
         } else {
           deadline = deadDate.toDateString(deadDate.setHours(deadDate.getHours() - diff));
         }
-        cal.data[i] = { title: title, deadline: deadline, description: description, completed: completed };
+
+        cal.data[i] = {
+          title: title,
+          deadline: { day: deadDate.getDate(), month: deadDate.getMonth(), year: deadDate.getFullYear() },
+          description: description,
+          completed: completed,
+        };
         console.log(cal.data[i]);
       }
     });
@@ -253,20 +257,18 @@ const cal = {
         }
         $dCell.append(`<div class="dd">${squares[i]}</div>`);
         for (j = 0; j < cal.data.length; j++) {
-          let deadDate = new Date(cal.data[j].deadline);
-          console.log(
-            `squares[i] is ${squares[i]}, can that equate to cal.data[j].deadline ${deadDate.getDate(
-              cal.data[j].deadline
-            )}`
-          );
-          if (deadDate.getDate(cal.data[j].deadline) === [squares[i]]) {
-            console.log("Yes it can!");
-            $dCell.append(`<div class='evt'>${cal.data[j].title}</div>`);
+          if (
+            cal.data[j].deadline.day === squares[i] &&
+            cal.data[j].deadline.month === cal.sMth &&
+            cal.data[j].deadline.year === cal.sYear
+          ) {
+            $dCell.append(`<div class='evt' style='color: red'>${cal.data[j].title}</div>`);
           }
         }
-        $dCell.click = () => {
+        $dCell.click((e) => {
+          $dCell.addClass("clicked");
           cal.show($dCell);
-        };
+        });
       }
       $dRow.append($dCell);
       if (i !== 0 && (i + 1) % 7 === 0) {
@@ -279,10 +281,10 @@ const cal = {
     cal.close();
   },
 
-  show: (el) => {
+  show: (el, e) => {
     console.log("cal.show called successfully");
     // "Fetch" existing data
-    cal.sDay = el.$(`.dd`)[0].html();
+    cal.sDay = $("clicked").text();
     let isEdit = cal.data[cal.sDay] !== undefined;
 
     // "Update" Event Form

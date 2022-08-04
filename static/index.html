@@ -45,21 +45,23 @@
         <h2 id="goals-title" class="sec-title">Goals</h2>
         <ul id="goals-list"></ul>
       </div>
-      <div id="cal-overhead" class="cal-overhead wrapper">
-        <div id="cal-container" class="cal-container container"></div>
-        <div id="input-container" class="container">
-          <div id="cal-date">
-            <select id="cal-mth"></select>
-            <select id="cal-yr"></select>
+      <div class="box">
+        <div id="cal-overhead" class="cal-overhead wrapper">
+          <div id="cal-container" class="cal-container container"></div>
+          <div id="input-container" class="container">
+            <div id="cal-date">
+              <select id="cal-mth"></select>
+              <select id="cal-yr"></select>
+            </div>
+            <form id="cal-event">
+              <h1 id="evt-head"></h1>
+              <div id="evt-date"></div>
+              <textarea id="evt-details" required></textarea>
+              <input id="evt-close" type="button" value="Close" />
+              <input id="evt-del" type="button" value="Delete" />
+              <input id="evt-save" type="submit" value="Save" />
+            </form>
           </div>
-          <form id="cal-event">
-            <h1 id="evt-head"></h1>
-            <div id="evt-date"></div>
-            <textarea id="evt-details" required></textarea>
-            <input id="evt-close" type="button" value="Close" />
-            <input id="evt-del" type="button" value="Delete" />
-            <input id="evt-save" type="submit" value="Save" />
-          </form>
         </div>
       </div>
     </div>
