@@ -11,9 +11,15 @@ const PORT = process.env.PORT || 3000;
 
 const sql = new postgres({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ...PORT(
+    process.env.NODE_ENV === "production"
+      ? {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        }
+      : {}
+  ),
 });
 
 app.use(express.static("static"));
