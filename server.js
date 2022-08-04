@@ -10,7 +10,11 @@ const PORT = process.env.PORT || 3000;
 const sql = postgres(
   `postgres://localhost:5432/tracker`,
   process.env.NODE_ENV === "production"
-    ? postgres({ ssl: { rejectUnauthorized: false }, connectionString: process.env.DATABASE_URL })
+    ? postgres({
+        ssl: { rejectUnauthorized: false },
+        connectionString: process.env.DATABASE_URL,
+        max_lifetime: 60 * 30,
+      })
     : postgres(`postgres://localhost:5432/tracker`)
 );
 
