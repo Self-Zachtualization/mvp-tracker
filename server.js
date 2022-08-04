@@ -7,7 +7,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const sql = postgres(`postgres://localhost:5432/tracker`);
+// const sql = postgres(`postgres://localhost:5432/tracker`);
+
+const sql = new postgres({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
 
 app.use(express.static("static"));
 app.use(express.json());
