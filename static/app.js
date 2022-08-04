@@ -82,7 +82,7 @@ const cal = {
   days: ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"],
 
   // Calendar Data
-  data: null,
+  data: [],
   sDay: 0,
   sMth: 0,
   sYear: 0,
@@ -139,6 +139,7 @@ const cal = {
     // Fill cal.data
     $.get(`/tracker/goals`, (result) => {
       const d = new Date();
+      console.log("cal.data before population: ", cal.data);
       for (i = 0; i < result.length; i++) {
         let { title, description, deadline, completed } = result[i];
         let diff = d.getTimezoneOffset() / 60;
@@ -148,15 +149,9 @@ const cal = {
         } else {
           deadline = deadDate.toDateString(deadDate.setHours(deadDate.getHours() - diff));
         }
-        let usersGoals = {
-          title: title,
-          description: description,
-          completed: completed,
-        };
-        cal.data["deadline"] = { title: title, description: description, completed: completed };
-        console.log(cal.data.deadline);
+        cal.data[i] = { title: title, deadline: deadline, description: description, completed: completed };
+        console.log(cal.data[i]);
       }
-      console.log(`cal.data: ${cal.data}, cal.data.deadline: ${cal.data.deadline}`);
     });
 
     // Draw Calendar
@@ -257,9 +252,18 @@ const cal = {
           $dCell.addClass("today");
         }
         $dCell.append(`<div class="dd">${squares[i]}</div>`);
-        // if (cal.data.username.deadline[squares[i]]) {
-        //   $dCell.append(`<div class='evt'>${cal.data[squares[i]]}</div>`);
-        // }
+        for (j = 0; j < cal.data.length; j++) {
+          let deadDate = new Date(cal.data[j].deadline);
+          console.log(
+            `squares[i] is ${squares[i]}, can that equate to cal.data[j].deadline ${deadDate.getDate(
+              cal.data[j].deadline
+            )}`
+          );
+          if (deadDate.getDate(cal.data[j].deadline) === [squares[i]]) {
+            console.log("Yes it can!");
+            $dCell.append(`<div class='evt'>${cal.data[j].title}</div>`);
+          }
+        }
         $dCell.click = () => {
           cal.show($dCell);
         };

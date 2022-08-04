@@ -9,10 +9,6 @@ const PORT = process.env.PORT || 3000;
 
 const sql = postgres(`postgres://localhost:5432/tracker`);
 
-//   connectionString: process.env.DATABASE_URL,
-//   ...(process.env.NODE_ENV === "production" ? { ssl: { rejectUnauthorized: false } } : {}),
-// });
-
 app.use(express.static("static"));
 app.use(express.json());
 
