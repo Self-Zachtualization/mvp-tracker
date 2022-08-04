@@ -1,42 +1,22 @@
-$(`#new-user-form`).submit((event) => {
-  event.preventDefault();
-
-  const userInfo = {};
-
-  $("#new-user-form")
-    .find("input")
-    .each((i, e) => {
-      userInfo[e.name] = e.value;
-    });
-  // console.log("userinfo: ", userInfo);
-  $.ajax({
-    url: "/tracker/users",
-    type: "POST",
-    data: JSON.stringify(userInfo),
-    contentType: "application/json; charset=utf-8",
-    dataType: "json",
-    success: (result) => {
-      const { username } = result;
-      console.log("username ", username, " result ", result);
-      alert(`Welcome to Tracker, ${username}`);
-    },
-  });
-});
-
 $("#login-form").submit((event) => {
   event.preventDefault();
   let username = $(`#username`).val();
   let password = $(`#password`).val();
   $.get(`/tracker/users/${username}`, (result) => {
-    console.log("Got this back from the query! ", result);
+    console.log("Got this back from the query: ", result);
     if (password === result.password) {
       $(`#user-check`).hide();
       $.get(`/tracker/goals`, (result) => {
-        // let { username } = result;
+        const d = new Date();
         for (i = 0; i < result.length; i++) {
           let { title, description, deadline, completed } = result[i];
-          deadline = `${deadline.getDay()}, ${deadline.getMonth()}, ${deadline.getFullYear()}`;
-          console.log(deadline);
+          let diff = d.getTimezoneOffset() / 60;
+          let deadDate = new Date(deadline);
+          if (diff >= 0) {
+            deadline = deadDate.toDateString(deadDate.setHours(deadDate.getHours() + diff));
+          } else {
+            deadline = deadDate.toDateString(deadDate.setHours(deadDate.getHours() - diff));
+          }
           const $list = $(`#goals-list`);
           const $item = $(`<li id='item ${i}'> ${title}: ${description}, due on ${deadline} </li>`);
           if (completed === true) {
@@ -45,6 +25,11 @@ $("#login-form").submit((event) => {
             $item.addClass("in-progress");
           }
           $list.append($item);
+          $list.click(() => {
+            $list.append(`<div id='item-adjust'></div>`);
+            const $adjuster = $("#item-adjust");
+            $(`<button id='delete'`);
+          });
           //   cal.data[username].i = {
           //     title: title,
           //     description: description,
@@ -64,9 +49,37 @@ $("#login-form").submit((event) => {
   });
 });
 
+$(`#register-form`).submit((event) => {
+  event.preventDefault();
+
+  const userInfo = {};
+
+  $("#register-form")
+    .find("input")
+    .each((i, e) => {
+      userInfo[e.name] = e.value;
+    });
+  $.ajax({
+    url: "/tracker/users",
+    type: "POST",
+    data: JSON.stringify(userInfo),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: (result) => {
+      const { username } = result;
+      console.log("username ", username, " result ", result);
+      alert(`Welcome to Tracker, ${username}`);
+      $(`#user-check`).hide();
+      cal.init();
+      $(`#tracker-body`).show();
+    },
+  });
+});
+
 // Calendar
 const cal = {
   mName: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  days: ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"],
 
   // Calendar Data
   data: null,
@@ -105,7 +118,10 @@ const cal = {
     // Append Month Selectors
     for (let i = 0; i < 12; i++) {
       let $opt = $(`<option value='${i}'>${cal.mName[i]}</option>`);
-      if (nowMth === i) $opt.selected = true;
+      if (nowMth === i) {
+        console.log("we know what month it is");
+        $opt.attr("selected", "selected");
+      }
       cal.hMth.append($opt);
     }
     cal.hMth.change(cal.list);
@@ -113,10 +129,35 @@ const cal = {
     // Append Year Selectors
     for (let i = nowYear; i <= nowYear + 4; i++) {
       let $opt = $(`<option value='${i}'>${i}</option>`);
-      if (i === nowYear) $opt.selected = true;
+      if (i === nowYear) {
+        $opt.attr("selected", "selected");
+      }
       cal.hYear.append($opt);
     }
     cal.hYear.change(cal.list);
+
+    // Fill cal.data
+    $.get(`/tracker/goals`, (result) => {
+      const d = new Date();
+      for (i = 0; i < result.length; i++) {
+        let { title, description, deadline, completed } = result[i];
+        let diff = d.getTimezoneOffset() / 60;
+        let deadDate = new Date(deadline);
+        if (diff >= 0) {
+          deadline = deadDate.toDateString(deadDate.setHours(deadDate.getHours() + diff));
+        } else {
+          deadline = deadDate.toDateString(deadDate.setHours(deadDate.getHours() - diff));
+        }
+        let usersGoals = {
+          title: title,
+          description: description,
+          completed: completed,
+        };
+        cal.data["deadline"] = { title: title, description: description, completed: completed };
+        console.log(cal.data.deadline);
+      }
+      console.log(`cal.data: ${cal.data}, cal.data.deadline: ${cal.data.deadline}`);
+    });
 
     // Draw Calendar
     cal.list();
@@ -136,34 +177,26 @@ const cal = {
       nowYear = parseInt(now.getFullYear()),
       nowDay = cal.sMth === nowMth && cal.sYear === nowYear ? now.getDate() : null;
 
-    // Load Data from LocalStorage (Do I want this??!?)
-    // cal.data = localStorage.getItem("cal-" + cal.sMth + "-" + cal.sYear);
-    // console.log('Before checking value of cal.data, it is this: ', cal.data);
-    // if (cal.data==null) {
-    //   localStorage.setItem("cal-" + cal.sMth + "-" + cal.sYear, "{}");
-    //   cal.data = {};
-    // } else {
-    //    cal.data = JSON.parse(JSON.stringify(cal.data));
-    //    console.log("after some stupid nonsense cal.data is this: ", cal.data)
-    //   }
-
     // I don't think so. I want my goals data stored in the tracker DB
-    $.get(`/tracker/goals`, (result) => {
-      let { username } = result;
-      for (i = 0; i < result.length; i++) {
-        let { title, description, deadline, completed } = result[i];
-        cal.data[username][title] = {
-          description: description,
-          deadline: deadline,
-          completed: completed,
-        };
-        console.log(cal.data);
-      }
-      cal.data.username.deadline = { year: d.getFullYear(), month: d.getMonth(), day: d.getDay() };
-      console.log(
-        `cal.data: ${cal.data}, cal.data.username: ${cal.data.username}, cal.data.username.deadline: ${cal.data.username.deadline}`
-      );
-    });
+    // $.get(`/tracker/goals`, (result) => {
+    //   for (i = 0; i < result.length; i++) {
+    //     let { title, description, deadline, completed } = result[i];
+    //     let deadDate = new Date(deadline);
+    //     deadline = `${deadDate.getDate()}, ${deadDate.getMonth()}, ${deadDate.getFullYear()}`;
+    //     let usersGoals = {
+    //       title: title,
+    //       description: description,
+    //       deadline: deadline,
+    //       completed: completed,
+    //     };
+    //     cal.data = usersGoals;
+    //     console.log(cal.data);
+    //   }
+    //   console.log(
+    //     `cal.data: ${cal.data}, cal.data.usersGoals.username: ${cal.data.usersGoals.username}, cal.data.usersGoals.deadline: ${cal.data.usersGoals.deadline}`
+    //   );
+    // });
+
     // Drawing Calculations
     let squares = [];
     if (startDay !== 1) {

@@ -14,38 +14,38 @@
   </head>
   <body>
     <h1 class="header">Tracker. Track yours.</h1>
-    <div id="user-check" class="container">
-      <div id="new-user" class="container">
-        <h3>If you are a new user, please create an account here.</h3>
-        <form id="new-user-form" method="post" name="new-user-form">
-          <label for="username">Username</label>
-          <input type="text" name="username" id="new-username" />
-          <label for="password">Password</label>
-          <input type="password" name="password" id="new-password" />
-          <input type="submit" id="new-user-submit" />
+    <div id="user-check" class="wrapper">
+      <h3>If you are a new user, please create an account here.</h3>
+      <div id="register-card" class="container">
+        <h2>Register</h2>
+        <form id="register-form" name="register-form">
+          <label for="reg-username">Username</label>
+          <input type="text" name="username" id="reg-username" />
+          <label for="reg-password">Password</label>
+          <input type="password" name="password" id="reg-password" />
+          <input type="submit" id="register-submit" />
         </form>
-        <h3>Existing users can log-in here</h3>
-        <div id="login-card" class="container">
-          <div id="main" class="main">
-            <h2>Login</h2>
-            <form id="login-form" method="post" name="login-form">
-              <label for="username">Username</label>
-              <input type="text" name="username" id="username" />
-              <label for="password">Password</label>
-              <input type="password" name="password" id="password" />
-              <input type="submit" value="Login" id="login" />
-            </form>
-          </div>
+      </div>
+      <h3>Existing users can log-in here</h3>
+      <div id="login-card" class="container">
+        <div id="main" class="main">
+          <h2>Login</h2>
+          <form id="login-form" name="login-form">
+            <label for="username">Username</label>
+            <input type="text" name="username" id="username" />
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" />
+            <input type="submit" id="login-submit" />
+          </form>
         </div>
       </div>
     </div>
-    <div id="tracker-body" class="container" style="display: none">
+    <div id="tracker-body" class="wrapper" style="display: none">
       <div id="goals-hold" class="container">
         <h2 id="goals-title" class="sec-title">Goals</h2>
         <ul id="goals-list"></ul>
       </div>
       <div id="cal-overhead" class="cal-overhead wrapper">
-        <h2 id="calendar-title" class="sec-title">Calendar</h2>
         <div id="cal-date">
           <select id="cal-mth"></select>
           <select id="cal-yr"></select>
