@@ -9,22 +9,12 @@ const PORT = process.env.PORT || 3000;
 
 const sql = postgres(
   `postgres://localhost:5432/tracker`,
-  process.env.NODE_ENV === "production" ? postgres({ ssl: { rejectUnauthorized: false } }) : postgres()
+  process.env.NODE_ENV === "production"
+    ? postgres({ ssl: { rejectUnauthorized: false }, connectionString: process.env.DATABASE_URL })
+    : postgres(`postgres://localhost:5432/tracker`)
 );
 
-console.log("Where the hell is my node_env?", process.env.NODE_ENV);
-
-// const sql = postgres({
-//   connectionString: process.env.DATABASE_URL,
-//   ...(process.env.NODE_ENV === "production" ? { ssl: { rejectUnauthorized: false } } : {}),
-// });
-
-// const sql = postgres({
-//   connectionString: process.env.DATABASE_URL,
-//   ...(process.env.NODE_ENV === "production"
-//     ? postgres({ ssl: { rejectUnauthorized: false } })
-//     : postgres(process.env.DATABASE_URL)),
-// });
+console.log("node_env? If production, should see FALSE", process.env.NODE_ENV, postgres.ssl);
 
 app.use(express.static("static"));
 app.use(express.json());
