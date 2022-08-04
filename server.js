@@ -12,6 +12,8 @@ const sql = postgres(
   process.env.NODE_ENV === "production" ? { ssl: { rejectUnauthorized: false } } : {}
 );
 
+console.log(process.env);
+
 // const sql = postgres({
 //   connectionString: process.env.DATABASE_URL,
 //   ...(process.env.NODE_ENV === "production" ? { ssl: { rejectUnauthorized: false } } : {}),
