@@ -285,7 +285,7 @@ const cal = {
     console.log("cal.show called successfully");
     // "Fetch" existing data
     cal.sDay = $("clicked").text();
-    let isEdit = cal.data[cal.sDay] !== undefined;
+    let isEdit = cal.data.deadline["cal.sDay"] !== undefined;
 
     // "Update" Event Form
     if (isEdit) {
